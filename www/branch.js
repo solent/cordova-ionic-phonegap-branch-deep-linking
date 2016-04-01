@@ -53,7 +53,7 @@ function executeCallback(method, callback, params) {
  * @class Branch
  */
 var Branch = function () {
-    
+
     this.debugMode = false;
 
 };
@@ -64,7 +64,7 @@ var Branch = function () {
  * @return (Promise)
  */
 Branch.prototype.initSession = function () {
-    
+
     return execute('initSession');
 
 };
@@ -280,50 +280,50 @@ Branch.prototype.createBranchUniversalObject = function (options) {
 
             };
 
-            /**        
-             * Set on share sheet launched listener callback.     
-             *        
-             * @param (Function) callback     
+            /**
+             * Set on share sheet launched listener callback.
+             *
+             * @param (Function) callback
              */
-            obj.onShareSheetLaunched = function (callback) {      
-      
+            obj.onShareSheetLaunched = function (callback) {
+
                 executeCallback('onShareLinkDialogLaunched', callback, [obj.instanceId]);
-      
+
             };
 
             obj.onShareSheetDismissed = function (callback) {
-                
+
                 executeCallback('onShareLinkDialogDismissed', callback, [obj.instanceId]);
 
             }
 
-            /**        
-             * Set on link share listener callback.       
-             *        
-             * @param (Function) callback     
+            /**
+             * Set on link share listener callback.
+             *
+             * @param (Function) callback
              */
-            obj.onLinkShareResponse = function (callback) {       
-      
+            obj.onLinkShareResponse = function (callback) {
+
                 executeCallback('onLinkShareResponse', callback, [obj.instanceId]);
-      
+
             };
-      
-            /**       
-             * Set on channel select listener callback.       
-             *        
-             * @param (Function) callback     
+
+            /**
+             * Set on channel select listener callback.
+             *
+             * @param (Function) callback
              */
-            obj.onChannelSelected = function (callback) {     
-      
+            obj.onChannelSelected = function (callback) {
+
                 executeCallback('onChannelSelected', callback, [obj.instanceId]);
-      
+
             };
-            
+
             /**
              * List item on Spotlight (iOS Only).
              */
             obj.listOnSpotlight = function () {
-                return execute('listOnSpotlight');
+                return execute('listOnSpotlight', [obj.instanceId]);
             };
 
             resolve(obj);

@@ -15,6 +15,10 @@
 - (Branch *)getInstance
 {
     NSLog(@"start getInstance");
+    if (self.branchUniversalObj == nil || [self.branchUniversalObj count] == 0) {
+        NSLog(@"creating buo");
+        self.branchUniversalObj = [[NSMutableArray alloc] init];
+    }
     return [Branch getInstance];
 }
 
@@ -98,13 +102,13 @@
         }
         else {
             NSLog(@"Init Error: %@", [error localizedDescription]);
-            
+
             // We create a JSON string result, because we're getting an error if we directly return a string result.
             NSDictionary *errorDict = [NSDictionary dictionaryWithObjectsAndKeys:[error localizedDescription],@"error", nil];
             NSData* errorJSON = [NSJSONSerialization dataWithJSONObject:errorDict
                                                                 options:NSJSONWritingPrettyPrinted
                                                                   error:&error];
-            
+
             resultString = [[NSString alloc] initWithData:errorJSON encoding:NSUTF8StringEncoding];
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:resultString];
         }
@@ -127,9 +131,9 @@
     if (enableDebug) {
         [[Branch getInstance] setDebug];
     }
-    
+
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:enableDebug];
-    
+
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
@@ -238,7 +242,7 @@
     else {
         [branch userCompletedAction:name];
     }
-    
+
     // TODO: need to resolve according to result of userCompletedAction, but no callback version of the method is exposed.
     CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString: @"Success"];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -379,37 +383,39 @@
     NSLog(@"start createBranchUniversalObject");
 
     NSDictionary *properties = [command.arguments objectAtIndex:0];
-    self.branchUniversalObj = [[BranchUniversalObject alloc] init];
+    BranchUniversalObject *buo = [[BranchUniversalObject alloc] init];
 
     for (id key in properties) {
         if ([key isEqualToString:@"contentMetadata"]){
             NSDictionary *metadata = (NSDictionary *)[properties valueForKey:key];
 
             for (id key_ in metadata) {
-                [self.branchUniversalObj addMetadataKey:key_ value:[metadata valueForKey:key_]];
+                [buo addMetadataKey:key_ value:[metadata valueForKey:key_]];
             }
         }
         else if ([key isEqualToString:@"contentIndexingMode"]) {
             NSString *indexingMode = [properties valueForKey:key];
             if ([indexingMode isEqualToString:@"private"]) {
-                self.branchUniversalObj.contentIndexMode = ContentIndexModePrivate;
+                buo.contentIndexMode = ContentIndexModePrivate;
 
             }
             else if ([indexingMode isEqualToString:@"public"]){
-                self.branchUniversalObj.contentIndexMode = ContentIndexModePublic;
+                buo.contentIndexMode = ContentIndexModePublic;
             }
         }
         else if ([key isEqualToString:@"contentImageUrl"]){
             NSString *imageUrl = [properties valueForKey:key];
-            self.branchUniversalObj.imageUrl = imageUrl;
+            buo.imageUrl = imageUrl;
         }
         else {
-            [self.branchUniversalObj setValue:[properties objectForKey:key] forKey:key];
+            [buo setValue:[properties objectForKey:key] forKey:key];
         }
     }
 
     NSLog(@"init BUO - %@", self.branchUniversalObj);
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"createBranchUniversalObject Success"];
+    [self.branchUniversalObj addObject:buo];
+    NSNumber *index = [[NSNumber alloc] initWithInteger:[self.branchUniversalObj count] - 1];
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:@{@"createBranchUniversalObject": @"Success", @"branchUniversalObjectId": index }];
     NSLog(@"returning data to js interface..");
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
@@ -417,14 +423,17 @@
 - (void)initWithCanonicalIdentifier:(CDVInvokedUrlCommand*)command
 {
     NSLog(@"start initWithCanonicalIdentifier");
+    BranchUniversalObject *buo = [[BranchUniversalObject alloc] init];
     if (!self.branchUniversalObj) {
         self.branchUniversalObj = [[BranchUniversalObject alloc] initWithCanonicalIdentifier:[command.arguments objectAtIndex:0]];
     }
     else {
         self.branchUniversalObj.canonicalIdentifier = [command.arguments objectAtIndex:0];
     }
+    buo.canonicalIdentifier = [command.arguments objectAtIndex:0];
 
     NSLog(@"init BUO - %@", self.branchUniversalObj);
+    [self.branchUniversalObj addObject:buo];
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"createBranchUniversalObject Success"];
     NSLog(@"returning data to js interface..");
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -433,6 +442,8 @@
 - (void)initWithTitle:(CDVInvokedUrlCommand*)command
 {
     NSLog(@"start initWithTitle");
+    BranchUniversalObject *buo = [[BranchUniversalObject alloc] init];
+    buo.title = [command.arguments objectAtIndex:0];
     if (!self.branchUniversalObj){
         self.branchUniversalObj = [[BranchUniversalObject alloc] initWithTitle:[command.arguments objectAtIndex:0]];
     }
@@ -441,6 +452,7 @@
     }
 
     NSLog(@"init BUO - %@", self.branchUniversalObj);
+    [self.branchUniversalObj addObject:buo];
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"createBranchUniversalObject Success"];
     NSLog(@"returning data to js interface..");
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -456,14 +468,18 @@
 - (void)registerView:(CDVInvokedUrlCommand*)command
 {
     NSLog(@"start registerView");
-    [self.branchUniversalObj registerView];
+    id index_id = [command.arguments objectAtIndex:0];
+    NSInteger index = [index_id integerValue];
+    [[self.branchUniversalObj objectAtIndex:index] registerView];
 }
 
 - (void)generateShortUrl:(CDVInvokedUrlCommand*)command
 {
     NSLog(@"start generateShortUrl");
-    NSDictionary *arg1 = [command.arguments objectAtIndex:0];
-    NSDictionary *arg2 = [command.arguments objectAtIndex:1];
+    id arg   = [command.arguments objectAtIndex:0];
+    NSInteger arg0 = [arg integerValue];
+    NSDictionary *arg1 = [command.arguments objectAtIndex:1];
+    NSDictionary *arg2 = [command.arguments objectAtIndex:2];
 
     BranchLinkProperties *props = [[BranchLinkProperties alloc] init];
 
@@ -479,8 +495,8 @@
     for (id key in arg2) {
         [props addControlParam:key withValue:[arg1 objectForKey:key]];
     }
-
-    [self.branchUniversalObj getShortUrlWithLinkProperties:props andCallback:^(NSString *url, NSError *error) {
+    BranchUniversalObject *buo = [self.branchUniversalObj objectAtIndex:arg0];
+    [buo getShortUrlWithLinkProperties:props andCallback:^(NSString *url, NSError *error) {
         NSLog(@"inside getShortUrlWithLinkProperties block");
         CDVPluginResult* pluginResult = nil;
         if (!error) {
@@ -512,8 +528,10 @@
         shareText = [command.arguments objectAtIndex:2];
     }
 
-    NSDictionary *arg1 = [command.arguments objectAtIndex:0];
-    NSDictionary *arg2 = [command.arguments objectAtIndex:1];
+    id arg = [command.arguments objectAtIndex:0];
+    NSInteger arg0 = [arg integerValue];
+    NSDictionary *arg1 = [command.arguments objectAtIndex:1];
+    NSDictionary *arg2 = [command.arguments objectAtIndex:2];
 
     BranchLinkProperties *linkProperties = [[BranchLinkProperties alloc] init];
 
@@ -530,7 +548,7 @@
         [linkProperties addControlParam:key withValue:[arg1 objectForKey:key]];
     }
 
-    [self.branchUniversalObj showShareSheetWithLinkProperties:linkProperties
+    [[self.branchUniversalObj objectAtIndex:arg0]showShareSheetWithLinkProperties:linkProperties
                                                 andShareText:shareText
                                                 fromViewController:self.viewController
                                                 completion:^(NSString *activityType, BOOL completed) {
@@ -539,7 +557,9 @@
 }
 
 - (void)listOnSpotlight:(CDVInvokedUrlCommand*)command {
-    [self.branchUniversalObj listOnSpotlightWithCallback:^(NSString *string, NSError *error) {
+    id arg = [command.arguments objectAtIndex:0];
+    NSInteger arg0 = [arg integerValue];
+    [[self.branchUniversalObj objectAtIndex:arg0] listOnSpotlightWithCallback:^(NSString *string, NSError *error) {
         NSLog(@"inside listOnSpotlightWithCallback block");
         CDVPluginResult* pluginResult = nil;
         if (!error) {
