@@ -19,6 +19,16 @@ Class injects plugin preferences into AndroidManifest.xml file.
    * @param {Object} pluginPreferences - plugin preferences as JSON object; already parsed
    */
   function writePreferences(cordovaContext, pluginPreferences) {
+    
+    // Get config.xml contents
+    var appConfigPath = path.join(cordovaContext.opts.projectRoot, 'config.xml');
+    var appConfig = xmlHelper.readXmlAsJson(appConfigPath);
+
+    for (pref in appConfig['widget']['preference']) {
+      var addPref = appConfig['widget']['preference'][pref]['$'];
+      pluginPreferences[addPref.name] = addPref.value;
+    }
+
     var pathToManifest = path.join(cordovaContext.opts.projectRoot, 'platforms', 'android', 'AndroidManifest.xml'),
       manifestSource = xmlHelper.readXmlAsJson(pathToManifest),
       cleanManifest,
@@ -170,7 +180,7 @@ Class injects plugin preferences into AndroidManifest.xml file.
    */
   function injectOptions(manifestData, pluginPreferences) {
     var changedManifest = manifestData,
-      targetSdk = changedManifest['manifest']['uses-sdk']['$']['android:targetSdkVersion'],
+      targetSdk = pluginPreferences['android-targetSdkVersion'],
       activitiesList = changedManifest['manifest']['application'][0]['activity'],
       launchActivityIndex = getMainLaunchActivityIndex(activitiesList),
       ulIntentFilters = [],
