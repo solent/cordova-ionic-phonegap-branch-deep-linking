@@ -36,6 +36,11 @@ onGet('test', (branchName, response, request) => {
     test(branchName, response, request);
 });
 function test(branchName, response, request) {
+    const logFile = 'test-' + timestamp();
+
+    response.send('logging output to http://' + request.hostname + '/logs/' +
+        logFile + '.html');
+
     if (fs.existsSync(LOCK_FILE)) {
         setTimeout(test.bind(null, branchName, response, request),
             RETRY_LOCK_SECONDS * 1000);
@@ -48,8 +53,13 @@ function test(branchName, response, request) {
     branchName = branchName.replace(/\'/g, '');
     branchName = branchName.replace(/\`/g, '');
 
+    function innerExec(command) {
+        log(logFile, 'exec: ' + commmand);
+        const out = execSync(command);
+        log(logFile, out);
+    }
     function exec(command) {
-        execSync('cd ' + test_repo + ' && ' + command);
+        innerExec('cd ' + test_repo + ' && ' + command);
     }
     exec('git fetch');
     exec("git checkout '" + branchName + "'");
@@ -80,8 +90,8 @@ function test(branchName, response, request) {
             response.end();
         }
     }
-    execSync('cordova run android --emulator');
-    execSync('cordova run ios --emulator');
+    innerExec('cordova run android --emulator');
+    innerExec('cordova run ios --emulator');
 }
 
 app.post('/log/:secret/:baseName', (request, response) => {
@@ -93,9 +103,8 @@ app.post('/log/:secret/:baseName', (request, response) => {
         body.push(chunk);
     }).on('end', function() {
         body = Buffer.concat(body);
-        const timestamp = new Date().toISOString().replace(':', '.');
         const fileName = '/logs/post-' + request.params.baseName + '-' +
-            timestamp + '.html';
+            timestamp() + '.html';
         fs.writeFileSync('.' + fileName, body);
         onPost(fileName, baseName);
     });
@@ -161,4 +170,8 @@ function onGet(app, basePath, callback) {
 function log(fileName, text) {
     fs.appendFileSync('./logs/' + fileName + '.html', new Date().toISOString() +
         ' ' + text + '');
+}
+
+function timestamp() {
+    return new Date().toISOString().replace(':', '.');
 }
