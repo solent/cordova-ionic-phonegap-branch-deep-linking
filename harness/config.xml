@@ -23,11 +23,11 @@
         <allow-intent href="itms:*" />
         <allow-intent href="itms-apps:*" />
     </platform>
-    <plugin name="io.branch.sdk-tests" spec="../../branch-cordova/tests" />
+    <plugin name="io.branch.sdk-tests" spec="../../repo/tests" />
     <plugin name="cordova-plugin-test-framework" spec="http://git-wip-us.apache.org/repos/asf/cordova-plugin-test-framework.git" />
     <engine name="android" spec="~5.2.1" />
     <engine name="ios" spec="~4.2.0" />
-    <plugin name="io.branch.sdk" spec="../../branch-cordova">
+    <plugin name="io.branch.sdk" spec="../../repo">
         <variable name="BRANCH_KEY" value="key_live_agl5WIycmYGmaquXWgXBDldgzCm30vXC" />
         <variable name="URI_SCHEME" value="amit" />
     </plugin>

@@ -44,7 +44,7 @@ function test(branchName, response, request) {
     if (fs.existsSync(LOCK_FILE)) {
         setTimeout(test.bind(null, branchName, response, request),
             RETRY_LOCK_SECONDS * 1000);
-        resppnse.send('waiting ' + RETRY_LOCK_SECONDS + 'sec for exclusive' +
+        response.send('waiting ' + RETRY_LOCK_SECONDS + 'sec for exclusive' +
             ' build lock. If stalled hit http://' + request.hostname + '/clear-lock');
         return;
     }
@@ -90,8 +90,11 @@ function test(branchName, response, request) {
             response.end();
         }
     }
-    innerExec('cordova run android --emulator');
-    innerExec('cordova run ios --emulator');
+    function cordovaRun(platform){
+        innerExec('cd harness && cordova run ' + platform + ' --emulator');
+    }
+    cordovaRun('ios');
+    cordovaRun('android');
 }
 
 app.post('/log/:secret/:baseName', (request, response) => {
