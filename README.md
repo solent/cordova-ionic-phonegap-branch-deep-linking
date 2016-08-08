@@ -2,7 +2,7 @@
 
 This is a server designed that runs the andriod and ios automated test suite of this project.
 
-It is a work in progress. The server component is done but untested. The cordova-plugin-test-framework needs to be replaced with a hacked version that automaticly runs the tests and uploads them back to the server. This should be possible by adding a reporter to [jasmine_helpers.js](https://github.com/apache/cordova-plugin-test-framework/blob/master/www/jasmine_helpers.js) based on [assets/jasmine-medic.js](https://github.com/apache/cordova-plugin-test-framework/blob/master/www/assets/jasmine-medic.js). Getting the tests running should just be a matter of adding the following code to [main.js](https://github.com/apache/cordova-plugin-test-framework/blob/master/www/main.js)
+It is a work in progress. The server component is done but untested. The cordova-plugin-test-framework needs to be replaced with a hacked version that automaticly runs the tests and uploads them back to the server. This should be possible by adding a reporter to [jasmine_helpers.js](https://github.com/apache/cordova-plugin-test-framework/blob/master/www/jasmine_helpers.js) based on [assets/jasmine-medic.js](https://github.com/apache/cordova-plugin-test-framework/blob/master/www/assets/jasmine-medic.js). Getting the tests running should just be a matter of adding the following code to [main.js](https://github.com/apache/cordova-plugin-test-framework/blob/master/www/main.js). Also note that it will be neccessary to fix up the code that injects the LAN ip at the end of the setup script to work with the reporter so that it has the correct IP to upload to.
 ```js
 document.addEventListener("deviceready", function() {
   runAutoTests();
