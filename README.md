@@ -2,11 +2,18 @@
 
 This is a server designed that runs the andriod and ios automated test suite of this project.
 
+It is a work in progress. The server component is done but untested. The cordova-plugin-test-framework needs to be replaced with a hacked version that automtilly runs the tests and uploads them back to the server. This should be possible by adding a reporter to [jasmine_helpers.js](https://github.com/apache/cordova-plugin-test-framework/blob/master/www/jasmine_helpers.js) based on [assets/jasmine-medic.js](https://github.com/apache/cordova-plugin-test-framework/blob/master/www/assets/jasmine-medic.js). Getting the tests running should just be a matter of adding the following code to [main.js](https://github.com/apache/cordova-plugin-test-framework/blob/master/www/main.js)
+```js
+document.addEventListener("deviceready", function() {
+  runAutoTests();
+}
+```
+
 # Setup
 
  1. Login to a mac using the gui
  1. Start the terminal and and run bash
- 1. Run `curl https://install.meteor.com/ | bash`
+ 1. Run `curl https://raw.githubusercontent.com/BranchMetrics/cordova-ionic-phonegap-branch-deep-linking/test-daemon/setup-test-server.sh | bash`
  1. Set the current account to automatically login on start via `Preferences > Users Groups` so that the server will start on boot
  1. Next define a travis environment variable with the public ip or domain name of the server you setup so that gulp will know where to submit jobs
  1. Run `open ~/Library/Android/sdk/tools/android` check off android 6.0, click Install Packages, and accept ALL licenses in the next screen before clicking install again to complete installation.
