@@ -20,8 +20,11 @@
 // Respond to URI scheme links
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
     // pass the url to the handle deep link call
-    [[Branch getInstance] handleDeepLink:url];
-    
+    if ( ![[Branch getInstance] handleDeepLink:url] ) {
+          // Let other Cordova elements an opportunity to process the URL if it was not handled as a deep-link
+         [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:CDVPluginHandleOpenURLNotification object:url]];
+    };
+
     // do other deep link routing for the Facebook SDK, Pinterest SDK, etc
     return YES;
 }
@@ -29,7 +32,7 @@
 // Respond to Universal Links
 - (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray *restorableObjects))restorationHandler {
     BOOL handledByBranch = [[Branch getInstance] continueUserActivity:userActivity];
-    
+
     return handledByBranch;
 }
 
